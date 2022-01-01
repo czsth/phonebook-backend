@@ -29,16 +29,34 @@ let persons = [
     }
 ]
 
-app.get('/info', (req, res) => {
+app.get('/api/persons/info', (request, response) => {
     const infoString = `
         <p>Phonebook has info for ${persons.length} people</p>
         <p>${Date()}</p>
     `
-    res.send(infoString)
+    response.send(infoString)
 })
 
-app.get('/persons', (req, res) => {
-    res.send(persons)
+app.get('/api/persons', (request, response) => {
+    response.send(persons)
+})
+
+app.get('/api/persons/:id', (request, response) => {
+    const id = Number(request.params.id)
+    const person = persons.find(person => person.id === id)
+
+    if (person) {
+        response.send(person)
+    } else {
+        response.status(404).end()
+    }
+})
+
+app.delete('/api/persons/:id', (request, response) => {
+    const id = Number(request.params.id)
+    persons = persons.filter(person => person.id !== id)
+
+    response.status(204).end()
 })
 
 
