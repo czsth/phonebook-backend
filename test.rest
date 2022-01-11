@@ -14,6 +14,7 @@ Content-Type: application/json
     "number": "110"
 }
 
+
 ###
 
 POST http://localhost:3001/api/persons 
@@ -27,3 +28,33 @@ POST http://localhost:3001/api/persons
 Content-Type: application/json
 
 {"name": "Cooper"}
+
+###
+
+POST http://localhost:3001/api/persons 
+Content-Type: application/json
+
+{
+    "name": "A",
+    "number": "110"
+}
+
+###
+
+POST http://localhost:3001/api/persons 
+Content-Type: application/json
+
+{
+    "name": "Osiris",
+    "number": "01"
+}
+
+###
+
+PUT http://localhost:3001/api/persons/61d5bfa215bd01a9fe019b1b
+Content-Type: application/json
+
+{
+    "name": "Cooper",
+    "number": "11"
+}

@@ -33,8 +33,7 @@ app.use(morgan((tokens, req, res) => {
 app.use(express.static('build'))
 
 
-let persons = []
-
+// routing
 
 app.get('/api/persons', (request, response, next) => {
     Person.find({}).then(persons => {
@@ -55,7 +54,7 @@ app.get('/api/persons/:id', (request, response, next) => {
         .catch(error => next(error))
 })
 
-app.delete('/api/persons/:id', (request, response) => {
+app.delete('/api/persons/:id', (request, response, next) => {
     Person.findByIdAndRemove(request.params.id)
         .then(result => {
             response.status(204).end()
@@ -63,35 +62,19 @@ app.delete('/api/persons/:id', (request, response) => {
         .catch(error => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response, next) => {
     const body = request.body
-
-    if (!body.name) {
-        return response.status(400).json({
-            error: 'name missing'
-        })
-    }
-
-    if (!body.number) {
-        return response.status(400).json({
-            error: 'number missing'
-        })
-    }
-
-    if (persons.find(x => x.name === body.name)) {
-        return response.status(403).json({
-            error: 'name exists'
-        })
-    }
 
     const person = new Person({
         name: body.name,
         number: body.number
     })
 
-    person.save().then(savedPerson => {
-        response.json(savedPerson)
-    })
+    person
+        .save().then(savedPerson => {
+            response.json(savedPerson)
+        })
+        .catch(error => next(error))
 })
 
 app.put('/api/persons/:id', (request, response, next) => {
@@ -102,7 +85,7 @@ app.put('/api/persons/:id', (request, response, next) => {
         number: body.number
     }
 
-    Person.findByIdAndUpdate(request.params.id, person, { new: true })
+    Person.findOneAndUpdate({ _id: request.params.id }, person, { new: true, runValidators: true })
         .then(updatedPerson => {
             response.json(updatedPerson)
         })
@@ -121,6 +104,10 @@ const errorHandler = (error, request, response, next) => {
 
     if (error.name === 'CastError' && error.kind === 'ObjectId') {
         return response.status(400).send({ error: 'mal-formatted id' })
+    } else if (error.name === 'ValidationError') {
+        return response.status(400).json({ error: error.message })
+    } else if (error.name === 'MongoServerError') {
+        return response.status(500).json({ error: error.message })
     }
 
     next(error)
